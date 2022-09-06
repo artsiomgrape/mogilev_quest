@@ -1,6 +1,5 @@
 package by.mog.avinahradau.mogilev_audio_quiz.service;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +13,6 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendAudio;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -125,12 +123,19 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void sendAudio(long chatId, String task) {
         try {
+            ResourceLoader resourceLoader = new DefaultResourceLoader();
+            Resource resource = resourceLoader.getResource("classpath:" + task + "/audio/audio.mp3");
+            try {
+                InputStream inputStream = resource.getInputStream();
+                SendAudio sendAudio = new SendAudio();
+                sendAudio.setChatId(chatId);
+                sendAudio.setAudio(new InputFile(inputStream, task + "/audio/audio.mp3"));
+                execute(sendAudio);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-            File file = ResourceUtils.getFile("classpath:" + task + "/audio/audio.mp3");
-            SendAudio sendAudio = new SendAudio();
-            sendAudio.setChatId(chatId);
-            sendAudio.setAudio(new InputFile(file));
-            execute(sendAudio);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

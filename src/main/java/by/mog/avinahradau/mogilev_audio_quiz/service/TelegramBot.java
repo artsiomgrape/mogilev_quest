@@ -2,12 +2,17 @@ package by.mog.avinahradau.mogilev_audio_quiz.service;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -151,11 +156,19 @@ public class TelegramBot extends TelegramLongPollingBot {
         message.setChatId(chatId);
         InputFile photo = new InputFile();
 
-        File file = ResourceUtils.getFile("classpath:" + photoPath);
-        photo.setMedia(file);
-        message.setPhoto(photo);
-        message.setReplyMarkup(getReplyKeyboardMarkup());
-        execute(message);
+        ResourceLoader resourceLoader = new DefaultResourceLoader();
+        Resource resource = resourceLoader.getResource("classpath:" + photoPath);
+        try {
+            InputStream inputStream = resource.getInputStream();
+
+            photo.setMedia(inputStream, photoPath);
+            message.setPhoto(photo);
+            message.setReplyMarkup(getReplyKeyboardMarkup());
+            execute(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void task(long chatId, String taskText) {
